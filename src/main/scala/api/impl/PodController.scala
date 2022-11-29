@@ -29,7 +29,6 @@ class PodController(override var routes: Array[Route] = Array(),
               case Success(pod) => complete(podToJson(pod).toString())
               case Failure(e) =>
                 complete(e.toString)
-                throw e
             }
           }
         }
@@ -46,8 +45,11 @@ class PodController(override var routes: Array[Route] = Array(),
       MethodDirectives.post {
         pathPrefix("pod") {
           entity(as[Pod]) { pod =>
-            print(pod)
-            complete("res")
+            onComplete(kubernetesService.persist(pod)) {
+              case Success(pod) => complete(podToJson(pod).toString())
+              case Failure(e) =>
+                complete(e.toString)
+            }
           }
         }
       }
